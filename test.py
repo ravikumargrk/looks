@@ -22,7 +22,7 @@ def appService(key):
     if key == curses.KEY_LEFT:
         myApp.update_content(myApp.content, 0, -1)
 
-with open('/root/projects/fvi/sample.txt', 'r') as f:
+with open('loremipsum', 'r') as f:
     buffer_test = f.read()
     f.close()
 
