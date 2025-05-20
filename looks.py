@@ -34,7 +34,7 @@ class app(object):
         if (content != self.content) or self.pad==None:
             self.content = content
             buffer_rows = len(self.content.splitlines())+10
-            buffer_cols = max(len(s) for s in self.content.splitlines())+10
+            buffer_cols = max([0] + [len(s) for s in self.content.splitlines()])+10 # max(<iter>) fails when <iter> becomes empty.
             if self.pad:
                 self.pad.clear()
             self.pad = curses.newpad(buffer_rows, buffer_cols)
