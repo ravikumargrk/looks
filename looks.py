@@ -10,7 +10,9 @@ with buttons, close button, a modifiable text area.
 #   print function -- 
 #       # option to autoscroll
 
+import threading
 import curses
+import time
 
 class app(object):
     def __init__(self, title, service, buttons = [], content=''):
@@ -24,6 +26,8 @@ class app(object):
 
         self.view_row = 0
         self.view_col = 0
+
+        self.key_inputs = []
     
     def update_content(self, content, d_view_row, d_view_col):
         # type: (str, int, int) -> None
@@ -52,6 +56,9 @@ class app(object):
         pass
 
     def activate(self):
+        self.thread = threading.Thread(target=self.service, args=(self,))
+        self.thread.setDaemon(True)
+
         curses.wrapper(self.main)
 
     def rectangle(self, uly, ulx, lry, lrx):
@@ -137,11 +144,11 @@ class app(object):
         self.stdscr.clear()
         self.draw()
 
-        # make a text box
-
         # self.stdscr.refresh() # no need to refresh after draw
-        
-        # mainloop for detecting term size change
+
+        # start background service
+        self.thread.start()
+
         while True:
             try:
                 key = self.stdscr.getch()
@@ -154,7 +161,10 @@ class app(object):
                     if (row == 0):
                         button_id = (term_cols - col - 1)//5
                         if button_id == 0: # close is the first button
-                            break
+                            # how to exit gracefully ?
+                            self.key_inputs.append(curses.KEY_CLOSE)
+                            if not self.thread.is_alive():
+                                break
                         else:
                             if button_id < len(self.buttons):
                                 foo = self.buttons[button_id][1]
@@ -169,12 +179,18 @@ class app(object):
                 # send other keys direct to app.
                 else:
                     # send keys to app function to update content
-                    self.service(key)
-
+                    # run in seperate thread.
+                    if key != -1:
+                        self.key_inputs.append(key)
+                
+                # keep checking if the service stopped.   
+                
                 # sleep(REFRESH_RATE)
             except KeyboardInterrupt:
+                # can we write exception to screen ?
                 break
         
         # mainloop for logging keystrokes
+        return 0
 
 
