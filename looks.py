@@ -1,7 +1,8 @@
-"""
-looks - module for a simple TUI framework 
-with buttons, close button, a modifiable text area. 
-"""
+# looks - Terminal UI framework
+# Copyright (C) 2025 Ravi Kumar
+# This file is part of the 'looks' project and is licensed under the GNU GPL v3.
+# See the LICENSE file for more details.
+
 # last updated: 
 # date -r looks.pyc
 # Sun May  8 06:30:00 UTC 2025

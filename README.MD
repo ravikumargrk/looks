@@ -1,3 +1,5 @@
+## Breif
+
 Give your python script a front end with a few lines of code.
 
 ```python
@@ -39,3 +41,7 @@ myApp.activate()
 ```
 
 ![alt text](looks_demo.jpg)
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
