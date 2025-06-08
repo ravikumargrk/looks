@@ -94,9 +94,7 @@ class app(object):
         row_stop = term_rows - BOT_PAD
         N_ROWS = term_rows - TOP_PAD - BOT_PAD
 
-        self.view_row = (len(self.content) - N_ROWS) if len(self.content) > (N_ROWS-1) else 0
-        self.view_col = 0
-        self.update()
+        self.update(N_ROWS, 0)
         
     def activate(self):
         self.thread = threading.Thread(target=self.service, args=(self,))
@@ -232,7 +230,8 @@ class app(object):
                 
                 # sleep(REFRESH_RATE)
             except KeyboardInterrupt:
-                pass
+                # pass
+                break
         
         # mainloop for logging keystrokes
         return 0

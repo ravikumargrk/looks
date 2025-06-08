@@ -18,7 +18,7 @@ def appService(app_front):
         if lines:
             app_front.content += [lines.pop(0)]
             app_front.scrolldown()
-            time.sleep(0.5)
+            time.sleep(1)
             # raise RuntimeError('')
 
 # scroll down button handler
@@ -29,8 +29,7 @@ def S_button_click():
 myApp = app(
     'text reader', 
     appService, 
-    buttons=[('S', S_button_click)], 
-    content=buffer_test.splitlines()
+    buttons=[('S', S_button_click)]
 ) 
 
 myApp.activate()
