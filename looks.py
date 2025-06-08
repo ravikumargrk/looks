@@ -223,22 +223,16 @@ class app(object):
                 
                 if not self.thread.is_alive():
                     break
-                # send other keys direct to app.
+                # send other keys direct to app service.
                 else:
                     # send keys to app function to update content
                     # run in seperate thread.
                     if key != -1:
                         self.key_inputs.append(key)
                 
-                # keep checking if the service stopped.   
-                
                 # sleep(REFRESH_RATE)
-            except Exception as e:
-                self.content += [str(e)]
-                self.update()
-                time.sleep(5)
-                # can we write exception to screen ?
-                break
+            except KeyboardInterrupt:
+                pass
         
         # mainloop for logging keystrokes
         return 0

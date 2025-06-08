@@ -19,6 +19,7 @@ def appService(app_front):
             app_front.content += [lines.pop(0)]
             app_front.scrolldown()
             time.sleep(0.5)
+            # raise RuntimeError('')
 
 # scroll down button handler
 def S_button_click():
