@@ -1,9 +1,41 @@
+Give your python script a front end with a few lines of code.
 
-Add:
-    looks app can just be running as a seperate process.
-    it can just read log (.json) file to render its body.
-    
-    it can communicate through a different json file in async
-    
+```python
+import curses
+from looks import app
 
-<!-- push test -->
+# example text file
+with open('random_text_file.txt', 'r') as f:
+    buffer_test = f.read()
+    f.close()
+
+lines = buffer_test.splitlines()
+import time
+def appService(app_front):
+    # type: (app) -> None
+    while True:
+        if app_front.key_inputs:
+            key = app_front.key_inputs.pop(0)
+            if key == curses.KEY_CLOSE:
+                break
+        if lines:
+            app_front.content += [lines.pop(0)]
+            app_front.scrolldown()
+            time.sleep(0.5)
+
+# scroll down button handler
+def S_button_click():
+    myApp.scrolldown()
+    pass
+
+myApp = app(
+    'text reader', 
+    appService, 
+    buttons=[('S', S_button_click)], 
+    content=buffer_test.splitlines()
+) 
+
+myApp.activate()
+```
+
+![alt text](looks_demo.jpg)

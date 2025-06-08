@@ -4,11 +4,7 @@ with buttons, close button, a modifiable text area.
 """
 # last updated: 
 # date -r looks.pyc
-# Sun May  4 17:50:13 UTC 2025
-
-# Needs:
-#   print function -- 
-#       # option to autoscroll
+# Sun May  8 06:30:00 UTC 2025
 
 import threading
 import curses
