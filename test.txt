@@ -1,0 +1,5 @@
+# in case of terminal emulator
+# you want text to come from bottom
+
+# in case of a text editpr
+# you want text to come from top 

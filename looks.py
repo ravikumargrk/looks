@@ -14,47 +14,94 @@ import threading
 import curses
 import time
 
+TOP_PAD = 2
+BOT_PAD = 2
+LFT_PAD = 1
+RGT_PAD = 1
+
 class app(object):
-    def __init__(self, title, service, buttons = [], content=''):
-        # type: (str, function, list[tuple], str) -> None
+    def __init__(self, title, service, buttons = [], content=[]):
+        # type: (str, function, list[tuple], list[str]) -> None
         self.title = title
         self.buttons = [('X', )]
         self.service = service
         self.buttons += buttons
         self.content = content
         self.pad = None
+        self.pad_line = 0
 
         self.view_row = 0
         self.view_col = 0
 
         self.key_inputs = []
     
-    def update_content(self, content, d_view_row, d_view_col):
-        # type: (str, int, int) -> None
+    # def update_content(self, content, d_view_row, d_view_col):
+    #     # type: (str, int, int) -> None
 
-        """
-        Update pad content if content changes or just move the window 
-        """
-        if (content != self.content) or self.pad==None:
-            self.content = content
-            buffer_rows = len(self.content.splitlines())+10
-            buffer_cols = max([0] + [len(s) for s in self.content.splitlines()])+10 # max(<iter>) fails when <iter> becomes empty.
-            if self.pad:
-                self.pad.clear()
-            self.pad = curses.newpad(buffer_rows, buffer_cols)
-            self.pad.clear()
-            for row, line in enumerate(self.content.splitlines()):
-                self.pad.addstr(row, 0, line)
+    #     """
+    #     Update pad content if content changes or just move the window 
+    #     """
+    #     if (content != self.content) or self.pad==None:
+    #         self.content = content
+    #         buffer_rows = len(self.content.splitlines())+10
+    #         buffer_cols = max([0] + [len(s) for s in self.content.splitlines()])+10 # max(<iter>) fails when <iter> becomes empty.
+    #         if self.pad:
+    #             self.pad.clear()
+    #         self.pad = curses.newpad(buffer_rows, buffer_cols)
+    #         self.pad.clear()
+    #         for row, line in enumerate(self.content.splitlines()):
+    #             self.pad.addstr(row, 0, line)
             
-        self.view_col = (self.view_col + d_view_col) if (self.view_col + d_view_col) >= 0 else 0
-        self.view_row = (self.view_row + d_view_row) if (self.view_row + d_view_row) >= 0 else 0
+    #     self.view_col = (self.view_col + d_view_col) if (self.view_col + d_view_col) >= 0 else 0
+    #     self.view_row = (self.view_row + d_view_row) if (self.view_row + d_view_row) >= 0 else 0
 
+    #     term_rows, term_cols = self.stdscr.getmaxyx()
+    #     self.pad.refresh(self.view_row, self.view_col, 2, 2, term_rows-3, term_cols-3)
+
+    def update(self, d_view_row=0, d_view_col=0):
+        # type: (int, int) -> None
+        # write last n lines of self.content
         term_rows, term_cols = self.stdscr.getmaxyx()
-        self.pad.refresh(self.view_row, self.view_col, 2, 2, term_rows-3, term_cols-3)
+        row_strt = TOP_PAD 
+        row_stop = term_rows - BOT_PAD
+        N_ROWS = term_rows - TOP_PAD - BOT_PAD
 
-    def printLine(self, text):  
-        pass
+        col_strt = 1 + LFT_PAD
+        col_stop = term_cols - RGT_PAD
+        N = term_cols - LFT_PAD - RGT_PAD - 1
 
+        # print first few lines 
+        show_lines = self.content[self.view_row : N_ROWS+self.view_row]
+        if not show_lines:
+            show_lines = ['']
+        max_width = max(len(w) for w in show_lines)
+        max_width = max(max_width - (N - 1), 0)
+        max_rows  = max(len(self.content) - N_ROWS + 1, 0)
+
+        self.view_col = min(max(self.view_col + d_view_col, 0), max_width)
+        self.view_row = min(max(self.view_row + d_view_row, 0), max_rows )
+
+        for row_idx in range(row_strt, row_stop):
+            self.stdscr.addnstr(row_idx, col_strt, ' '*N, N, self.A_NORMAL)
+            idx = (row_idx-row_strt)
+            if idx < len(show_lines):
+                line = show_lines[idx][self.view_col:]
+                self.stdscr.addnstr(row_idx, col_strt, line, N, self.A_NORMAL)
+            row_idx += 1
+        
+        # upon load, write the first lines from top.
+        # self.stdscr.redrawwin()
+
+    def scrolldown(self):
+        term_rows, term_cols = self.stdscr.getmaxyx()
+        row_strt = TOP_PAD 
+        row_stop = term_rows - BOT_PAD
+        N_ROWS = term_rows - TOP_PAD - BOT_PAD
+
+        self.view_row = (len(self.content) - N_ROWS) if len(self.content) > (N_ROWS-1) else 0
+        self.view_col = 0
+        self.update()
+        
     def activate(self):
         self.thread = threading.Thread(target=self.service, args=(self,))
         self.thread.setDaemon(True)
@@ -100,8 +147,8 @@ class app(object):
         self.stdscr.refresh()
 
         # draw content
-        self.update_content(self.content, 0, 0)
-        
+        # self.update_content(self.content, 0, 0)
+        self.update()
         # finishing
 
     def main(self, stdscr):
@@ -119,6 +166,10 @@ class app(object):
         curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_CYAN)
         self.A_BUTN = curses.color_pair(3)
 
+        # window invert colour
+        curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        self.A_NORMAL = curses.color_pair(4)
+
         # init mouse
         curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
 
@@ -132,7 +183,7 @@ class app(object):
         # UI
         
         # disable cursor -- temporary
-        # curses.curs_set(0)
+        curses.curs_set(0)
 
         # create pad for display content
 
@@ -163,8 +214,6 @@ class app(object):
                         if button_id == 0: # close is the first button
                             # how to exit gracefully ?
                             self.key_inputs.append(curses.KEY_CLOSE)
-                            if not self.thread.is_alive():
-                                break
                         else:
                             if button_id < len(self.buttons):
                                 foo = self.buttons[button_id][1]
@@ -176,6 +225,8 @@ class app(object):
                     self.stdscr.clear()
                     self.draw()
                 
+                if not self.thread.is_alive():
+                    break
                 # send other keys direct to app.
                 else:
                     # send keys to app function to update content
@@ -186,7 +237,10 @@ class app(object):
                 # keep checking if the service stopped.   
                 
                 # sleep(REFRESH_RATE)
-            except KeyboardInterrupt:
+            except Exception as e:
+                self.content += [str(e)]
+                self.update()
+                time.sleep(5)
                 # can we write exception to screen ?
                 break
         
