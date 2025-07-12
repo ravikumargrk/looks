@@ -7,6 +7,7 @@
 # date -r looks.pyc
 # Sun May  8 06:30:00 UTC 2025
 
+import traceback
 import threading
 import curses
 import time
@@ -31,6 +32,8 @@ class app(object):
         self.view_col = 0
 
         self.key_inputs = []
+
+        self.exit_log = ''
     
     # def update_content(self, content, d_view_row, d_view_col):
     #     # type: (str, int, int) -> None
@@ -96,12 +99,22 @@ class app(object):
         N_ROWS = term_rows - TOP_PAD - BOT_PAD
 
         self.update(N_ROWS, 0)
-        
+
+    def service_wrapper(self, *args, **kwargs):
+        try:
+            self.service(*args, **kwargs)
+        except Exception as e:
+            tb_lines = traceback.format_exc().splitlines()
+            tb_lines = tb_lines[0:1] + tb_lines[3:]
+            self.exit_log = '\n'.join(tb_lines)
+
     def activate(self):
-        self.thread = threading.Thread(target=self.service, args=(self,))
+        self.thread = threading.Thread(target=self.service_wrapper, args=(self,))
         self.thread.setDaemon(True)
 
         curses.wrapper(self.main)
+        print(self.exit_log)
+
 
     def rectangle(self, uly, ulx, lry, lrx):
         """Draw a rectangle with corners at the provided upper-left
@@ -238,3 +251,5 @@ class app(object):
         return 0
 
 
+# add __name___ = '__main__' case
+# display output from stdin 

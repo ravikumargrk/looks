@@ -15,12 +15,15 @@ def appService(app_front):
             key = app_front.key_inputs.pop(0)
             if key == curses.KEY_CLOSE:
                 break
+            
         if lines:
             app_front.content += [lines.pop(0)]
             app_front.scrolldown()
             time.sleep(1)
-            # raise RuntimeError('')
 
+            if len(app_front.content) > 4:
+                raise RuntimeError('TMKC')
+            
 # scroll down button handler
 def S_button_click():
     myApp.scrolldown()
