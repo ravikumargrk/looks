@@ -12,6 +12,14 @@ import threading
 import curses
 import time
 
+# disable Ctrl+Z to send sigstop
+import signal
+signal.signal(signal.SIGTSTP, signal.SIG_IGN)
+
+# disable Ctrl+S and Ctrl+Q which pauses the terminal 
+import os
+os.system("stty -ixon")
+
 TOP_PAD = 2
 BOT_PAD = 2
 LFT_PAD = 1
@@ -191,7 +199,7 @@ class app(object):
         # UI
         
         # disable cursor -- temporary
-        curses.curs_set(0)
+        # curses.curs_set(0)
 
         # create pad for display content
 
@@ -244,8 +252,9 @@ class app(object):
                 
                 # sleep(REFRESH_RATE)
             except KeyboardInterrupt:
-                # pass
-                break
+                pass
+                # self.exit_log += 'Keyboard Interrupt'
+                # break
         
         # mainloop for logging keystrokes
         return 0
