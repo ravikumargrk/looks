@@ -108,6 +108,10 @@ class app(object):
 
         self.update(N_ROWS, 0)
 
+    def get_current_size(self):
+        term_rows, term_cols = self.stdscr.getmaxyx()
+        return term_rows - TOP_PAD - BOT_PAD, term_cols - LFT_PAD - RGT_PAD
+
     def service_wrapper(self, *args, **kwargs):
         try:
             self.service(*args, **kwargs)
@@ -221,21 +225,22 @@ class app(object):
                 key = self.stdscr.getch()
                 
                 if key == curses.KEY_MOUSE: # mouse event
-                    _, col, row, _, _ = curses.getmouse()
-                    # add condition for left click and left hold only
-                    _, term_cols = self.stdscr.getmaxyx()
-                    
-                    if (row == 0):
-                        button_id = (term_cols - col - 1)//5
-                        if button_id == 0: # close is the first button
-                            # how to exit gracefully ?
-                            self.key_inputs.append(curses.KEY_CLOSE)
-                        else:
-                            if button_id < len(self.buttons):
-                                foo = self.buttons[button_id][1]
-                                foo()
-                        pass
-                    # self.stdscr.addstr(5, 5, str(button_id))
+                    _, col, row, _, mouse_state = curses.getmouse()
+                    if mouse_state & curses.BUTTON1_PRESSED:
+                        # add condition for left click and left hold only
+                        _, term_cols = self.stdscr.getmaxyx()
+                        
+                        if (row == 0):
+                            button_id = (term_cols - col - 1)//5
+                            if button_id == 0: # close is the first button
+                                # how to exit gracefully ?
+                                self.key_inputs.append(curses.KEY_CLOSE)
+                            else:
+                                if button_id < len(self.buttons):
+                                    foo = self.buttons[button_id][1]
+                                    foo()
+                            pass
+                        # self.stdscr.addstr(5, 5, str(button_id))
 
                 if key == curses.KEY_RESIZE:
                     self.stdscr.clear()
